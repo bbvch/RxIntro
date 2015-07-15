@@ -84,15 +84,15 @@
             var observable = Observable.Repeat("FooBar");
 
             // TODO: create a strict collection from the observable
-            // Hint1: also find a way to terminate the infinite stream of elements (e.g. after a fixed number)
-            // Hint2: did you notice the test's signature?
+            // HINT 1: also find a way to terminate the infinite stream of elements (e.g. after a fixed number)
+            // HINT 2: did you notice the test's signature?
             var strictCollection = observable;
 
             strictCollection.Should().BeAssignableTo<ICollection<string>>();
         }
 
         [Fact]
-        public void Exercise_ErrorsShouldTerminateObservables()
+        public void Note_ErrorsShouldTerminateObservables()
         {
             var scheduler = new TestScheduler();
 
@@ -105,6 +105,6 @@
             var lastMessageKind = results.Messages.Last().Value.Kind;
 
             lastMessageKind.Should().Be(NotificationKind.OnNext, "MS implements non-standard IObservables");
-        } 
+        }
     }
 }

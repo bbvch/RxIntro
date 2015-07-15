@@ -40,7 +40,7 @@
             var firstThreadId = Thread.CurrentThread.ManagedThreadId;
 
             // TODO: find a way to schedule observations on a different thread
-            // Hint: might also be done using an overload when creating the observable
+            // HINT: might also be done using an overload when creating the observable
             observable = observable;
 
             observable.Select(_ => Thread.CurrentThread.ManagedThreadId).Subscribe(observer);

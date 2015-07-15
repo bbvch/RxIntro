@@ -32,8 +32,8 @@
                     return Disposable.Empty;
                 });
 
-            // TODO: using LINQ query syntax or extension methods filter
-            // s.t. only the terms with a length of 8 and more are returned.
+            // TODO: Use LINQ query syntax or extension methods to return only the terms where the length is greather than 7
+            // HINT: http://reactivex.io/documentation/operators/filter.html
             var constructingObservables = observable;
 
             var result = await constructingObservables.ToList();
@@ -59,13 +59,14 @@
 
             scheduler.Start(() => interleaved, 0, 10, 500);
 
-            // TODO: this should be obvious
+            // TODO: Write the expected values with the correct order into the next statement
+            // HINT: http://reactivex.io/documentation/operators/merge.html
             var expected = new char[] { };
 
             observer.Values.ShouldAllBeEquivalentTo(expected);
         }
 
-        [Fact]
+        [Fact (Skip = "todo. Verify expected values.")]
         public void Exercise_OneAfterTheOtherWhenCold()
         {
             var scheduler = new TestScheduler();
@@ -83,12 +84,13 @@
                 OnNext(410, 30));
 
             // TODO: concatenate the two observables
+            // HINT: http://reactivex.io/documentation/operators/concat.html
             IObservable<int> firstAThenB = null;
 
             var events = scheduler.Start(() => firstAThenB, 0, 10, 1000);
 
             events.Messages.AssertEqual(
-                OnNext(100, 1),
+                OnNext(110, 1),
                 OnNext(200, 2),
                 OnNext(300, 3),
                 OnNext(620, 10),
@@ -120,8 +122,8 @@
 
             var events = scheduler.Start(() => firstAThenB, 0, 10, 1000);
 
-            // TODO: try making the test pass by adding OnNext statement(s) at the end of the AssertEqual statement
-            // Hint: (re)read the second part of the initial comment.
+            // TODO: Add the missing OnNext statement(s) at the end of the AssertEqual statement
+            // HINT: (re)read the second part of the initial comment.
             events.Messages.AssertEqual(
                 OnNext(100, 1),
                 OnNext(200, 2),
@@ -140,7 +142,7 @@
                 OnNext(600, 4));
 
             // TODO: ignore elements following each other in less than or equal 100 ticks
-            // Hint: do not forget to pass the scheduler
+            // HINT: do not forget to pass the scheduler
             var throttledObservable = fastObservable;
 
             var observer = scheduler.Start(() => throttledObservable, 0, 0, 1000);
@@ -159,14 +161,14 @@
             // For reactive streams, having strictly distinct values implies waiting for completion and
             // caching all intermediate results. A more common use case is to only let through values that
             // changed relatively to the previous one.
-            // TODO: only return changed respectivelly new temperature values
+            // TODO: only return changed respectively new temperature values
             var temperatureChangesToShow = temperature;
 
             var result = await temperatureChangesToShow.ToList();
             result.ShouldAllBeEquivalentTo(new[] { 20, 21, 22, 21, 24 });
         }
 
-        [Fact]
+        [Fact (Skip = "refine into smaller steps")]
         public void Exercise_Batching()
         {
             var scheduler = new TestScheduler();
@@ -180,7 +182,9 @@
                 OnCompleted<string>(700));
             var cableCar = new TestSink<IEnumerable<string>>();
 
-            // - The cable car leaves as soon as it is full (2 persons) or every 120 ticks
+            // - The cable car leaves as soon as it is full: 
+            //     a) either when there are 2 persons in the car or 
+            //     b) when 120 ticks passed
             // - The cable car should only leave, when tourists are present
             // TODO: Split the tourists into suitable batches
             // (hint: 2 steps, waiting areas are buffers) and subscribe the cableCar
@@ -202,9 +206,8 @@
                 Observable.Interval(TimeSpan.FromMilliseconds(100), scheduler).Select(_ => thermoSensor.Next(-273, 100));
 
             // TODO: calculate the moving (every second) average (over one minute) of the temperature readings.
-            // Hint: use a suitable overload of the same method used in "Batching" and calculate the average using LINQ
-            var averages =
-                temperatureReadings.Average(/* TODO: replace, only here for type checking */);
+            // HINT: use a suitable overload of the same method used in "Batching" and calculate the average using LINQ
+            var averages = Observable.Empty<double>();
 
             var observer = new TestSink<double>();
             averages.Subscribe(observer);
@@ -230,7 +233,7 @@
             var observer = new TestSink<Tuple<long, long>>();
 
             // TODO: always switch to the latest topic
-            var latestInteresting = (IObservable<Tuple<long, long>>)articlesInTopics;
+            var latestInteresting = Observable.Empty<Tuple<long, long>>();
 
             latestInteresting.Subscribe(observer);
 

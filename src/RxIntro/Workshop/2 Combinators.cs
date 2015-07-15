@@ -17,7 +17,7 @@
     public class Combinators : ReactiveTest
     {
         [Fact]
-        public void Filtering()
+        public async void Filtering()
         {
             var observable = Observable.Create<string>(
                 o =>
@@ -35,10 +35,8 @@
             // TODO: using LINQ query syntax or extension methods filter s.t. the variable name is descriptive
             var constructingObservables = observable;
 
-            var observer = new TestSink<string>();
-            constructingObservables.Subscribe(observer);
-
-            observer.Values.ShouldAllBeEquivalentTo(new[] { "constructing", "observables" });
+            var result = await constructingObservables.ToList();
+            result.ShouldAllBeEquivalentTo(new[] { "constructing", "observables" });
         }
 
         [Fact]
@@ -50,7 +48,7 @@
                 OnNext(100, 'A'),
                 OnNext(300, 'C'));
 
-            var observableB = scheduler.CreateHotObservable(
+            var observableB = scheduler.CreateColdObservable(
                 OnNext(200, 'B'));
 
             var interleaved = observableA.Merge(observableB);
@@ -60,14 +58,14 @@
 
             scheduler.Start(() => interleaved, 0, 10, 500);
 
-            // TODO: construct an array containing some characters from the beginning of the alphabet
-            char[] expected = null;
+            // TODO: this should be obvious
+            var expected = new char[] { };
 
             observer.Values.ShouldAllBeEquivalentTo(expected);
         }
 
         [Fact]
-        public void OneAfterTheOther()
+        public void OneAfterTheOtherWhenCold()
         {
             var scheduler = new TestScheduler();
 
@@ -97,6 +95,39 @@
         }
 
         [Fact]
+        public void OneAfterTheOtherWhenHot()
+        {
+            var scheduler = new TestScheduler();
+
+            // Opposed to cold observables that generate their values everytime an observer subscribes
+            // hot observables run "in the background" (think touching the CPU when no subscribers are around).
+            // I.e. cold observables timings are relative to the subscription whereas hot observables timings
+            // are relative to their creation. A typical instance of a hot observable are mouse events:
+            // they happen regardless of subscriptions and once they've happened, they're gone (unless 'replay'ed).
+            var observableA = scheduler.CreateHotObservable(
+                OnNext(100, 1),
+                OnNext(200, 2),
+                OnNext(300, 3),
+                OnCompleted<int>(400));
+
+            var observableB = scheduler.CreateHotObservable(
+                OnNext(210, 10),
+                OnNext(310, 20),
+                OnNext(410, 30));
+
+            var firstAThenB = observableA.Concat(observableB);
+
+            var events = scheduler.Start(() => firstAThenB, 0, 10, 1000);
+
+            // TODO: try making the test pass by adding OnNext statement(s)
+            // Hint: (re)read the second part of the initial comment.
+            events.Messages.AssertEqual(
+                OnNext(100, 1),
+                OnNext(200, 2),
+                OnNext(300, 3));
+        }
+
+        [Fact]
         public void Debounce()
         {
             var scheduler = new TestScheduler();
@@ -116,6 +147,22 @@
             observer.Messages.AssertEqual(
                 OnNext(450, 3),
                 OnNext(600, 4));
+        }
+
+        [Fact]
+        public async void OnlyNewStuff()
+        {
+            var temperature = new[] { 20, 20, 21, 22, 22, 21, 24 }.ToObservable();
+
+            // As with records from a database, we might only be interested in distinct notifications.
+            // For reactive streams, having strictly distinct values implies waiting for completion and
+            // caching all intermediate results. A more common use case is to only let through values that
+            // changed relatively to the previous one.
+            // TODO: only refresh the e-ink display once the temperature changed
+            var temperatureChangesToShow = temperature;
+
+            var result = await temperatureChangesToShow.ToList();
+            result.ShouldAllBeEquivalentTo(new[] { 20, 21, 22, 21, 24 });
         }
 
         [Fact]
@@ -153,7 +200,6 @@
             var temperatureReadings =
                 Observable.Interval(TimeSpan.FromMilliseconds(100), scheduler).Select(_ => thermoSensor.Next(-273, 100));
 
-            // For infinite 'bouncing' series we cannot use the "Debounce" solution.
             // TODO: calculate the moving (every second) average (over one minute) of the temperature readings.
             // Hint: use a suitable overload of the same method used in "Batching" and calculate the average using LINQ
             var averages =
@@ -172,48 +218,30 @@
         {
             var scheduler = new TestScheduler();
 
-            var observable =
+            // For a news site offering articles about trending topics we want to keep reading about
+            // a topic until a new trend appears, when we want to hear about the latest news there.
+            // For the sake of simplicity, we assume fixed rates for topics and articles:
+            var articlesInTopics =
                 Observable.Interval(TimeSpan.FromTicks(100), scheduler)
-                .Select(i => Observable.Interval(TimeSpan.FromTicks(40), scheduler).Select(_ => i));
+                .Select(topic => Observable.Interval(TimeSpan.FromTicks(40), scheduler)
+                    .Select(article => new Tuple<long, long>(topic, article)));
 
-            var observer = new TestSink<long>();
+            var observer = new TestSink<Tuple<long, long>>();
 
-            observable.Switch().Subscribe(observer);
+            // TODO: always switch to the latest topic
+            var latestInteresting = (IObservable<Tuple<long, long>>)articlesInTopics;
+
+            latestInteresting.Subscribe(observer);
 
             scheduler.AdvanceTo(300);
 
-            // TODO: looking at the code above, try to infer the expected value (hint: two pairs)
-            observer.Values.ShouldAllBeEquivalentTo(Enumerable.Empty<long>());
-        }
-
-        [Fact]
-        public void AfterYou()
-        {
-            var scheduler = new TestScheduler();
-
-            // Opposed to cold observables that generate their values everytime an observer subscribes
-            // hot observables run "in the background" (think touching the CPU when no subscribers are around).
-            var observableA = scheduler.CreateHotObservable(
-                OnNext(100, 1),
-                OnNext(200, 2),
-                OnNext(300, 3),
-                OnCompleted<int>(400));
-
-            var observableB = scheduler.CreateHotObservable(
-                OnNext(210, 10),
-                OnNext(310, 20),
-                OnNext(410, 30));
-
-            var firstAThenB = observableA.Concat(observableB);
-
-            var events = scheduler.Start(() => firstAThenB, 0, 10, 1000);
-
-            // TODO: try making the test pass (without looking at the test output)
-            // Hint: some events might already have passed once the subscription gets to the second observable.
-            events.Messages.AssertEqual(
-                OnNext(100, 1),
-                OnNext(200, 2),
-                OnNext(300, 3));
+            observer.Values.ShouldAllBeEquivalentTo(new[]
+                                                        {
+                                                            new Tuple<long, long>(0, 0),
+                                                            new Tuple<long, long>(0, 1),
+                                                            new Tuple<long, long>(1, 0),
+                                                            new Tuple<long, long>(1, 1),
+                                                        });
         }
     }
 }

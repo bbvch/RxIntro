@@ -4,7 +4,7 @@
     using System.Collections.Generic;
     using System.Collections.Immutable;
 
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
     public class TestSink<T> : IObserver<T>
     {
@@ -33,7 +33,7 @@
 
         public void OnError(Exception error)
         {
-            Assert.Fail(error.Message);
+            Assert.True(false, error.Message);
         }
 
         public void OnCompleted()

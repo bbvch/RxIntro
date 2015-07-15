@@ -95,6 +95,7 @@
     <Compile Include="CreatingObservables.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Infrastructure\TestBench.linq" />
     <None Include="packages.config" />
     <None Include="Settings.StyleCop" />
   </ItemGroup>

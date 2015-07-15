@@ -21,10 +21,9 @@
     // to know the details of the test arrangement before you know the task (sometimes even not at all).
     // Try solving first without looking at the test output. Debugging should not be needed.
     // -
-    // For looking at live values, LINQPad is a great tool. In its left-hand explorer panel select samples,
-    // Download/import more samples... and enter http://linqpadupdates.net/rx/samples.zip This will add a new
-    // node "Reactive Extensions". Executing any of the samples lets you download the required packages.
-    // From there on, LINQPad will understand observables.
+    // For looking at live values, LINQPad is a great tool. Open TestBench.linq from the Infrastructure folder.
+    // This will download some nuGet packages. From there on you can just paste a 'Fact' into LINQPad,
+    // add some 'Dump()' statements, press F5 and enjoy (or hate) the outcome.
     public class Basics : ReactiveTest
     {
         [Fact]
@@ -71,13 +70,19 @@
         [Fact]
         public void Exercise_ToLazy()
         {
-            // Also, leaving the monad is mostly useful when testing or a non-reactive datastructure needs to be built.
+            // Leaving the monad* (the world of observables) is mostly useful
+            // when testing or building non-reactive datastructures for passing
+            // them on to non-reactive APIs.
             var observable = Observable.Repeat("FooBar");
 
             // TODO: create an enumerable from the observable
             var lazyEnumerable = observable;
 
             lazyEnumerable.Should().BeAssignableTo<IEnumerable<string>>();
+
+            // * Freaky detail: observables define a so called monad through the
+            // 'Return' and 'SelectMany' operations. Fortunately, using these powerful
+            // tools does not require any knowledge thereof.
         }
 
         [Fact]

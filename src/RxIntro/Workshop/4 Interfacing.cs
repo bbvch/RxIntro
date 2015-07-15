@@ -10,13 +10,13 @@
     using FluentAssertions;
 
     using Xunit;
-
+    
     public class Interfacing
     {
         public static event EventHandler<string> MessageReceived;
 
         [Fact]
-        public void ObservablesDoNotSubscribeUnnecessarily()
+        public void Note_ObservablesDoNotSubscribeUnnecessarily()
         {
             var observable = Observable.FromEventPattern<string>(
                 ev => MessageReceived += ev,
@@ -24,12 +24,12 @@
 
             // When there are no observers, there should also be no event handler attached.
             // (FYI, of course there's a way to alter that behaviour, s.t. events don't get lost.)
-            // TODO: convince yourself
-            MessageReceived.ShouldBeEquivalentTo(string.Empty);
+            Assert.True(false, "Read the code, try to understand its meaning and finally remove this statement");
+            MessageReceived.Should().BeNull();
         }
 
         [Fact]
-        public void ObservablesTakeCareOfTheEnvironment()
+        public void Exercise_ObservablesTakeCareOfTheEnvironment()
         {
             var observable = Observable.FromEventPattern<string>(
                 ev => MessageReceived += ev,
@@ -45,7 +45,7 @@
         }
 
         [Fact]
-        public void ObservablesAreLegacyEventCompatible()
+        public void Exercise_ObservablesAreLegacyEventCompatible()
         {
             this.MonitorEvents();
 
@@ -60,7 +60,7 @@
         }
 
         [Fact]
-        public void FromTasks()
+        public void Exercise_FromTasks()
         {
             var task = Task.Factory.StartNew(() => { Thread.Sleep(10); return "Done"; });
             

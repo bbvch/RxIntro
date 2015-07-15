@@ -17,7 +17,7 @@
     public class Combinators : ReactiveTest
     {
         [Fact]
-        public async void Filtering()
+        public async void Exercise_Filtering()
         {
             var observable = Observable.Create<string>(
                 o =>
@@ -32,7 +32,8 @@
                     return Disposable.Empty;
                 });
 
-            // TODO: using LINQ query syntax or extension methods filter s.t. the variable name is descriptive
+            // TODO: using LINQ query syntax or extension methods filter
+            // s.t. only the terms with a length of 8 and more are returned.
             var constructingObservables = observable;
 
             var result = await constructingObservables.ToList();
@@ -40,7 +41,7 @@
         }
 
         [Fact]
-        public void Merging()
+        public void Exercise_Merging()
         {
             var scheduler = new TestScheduler();
 
@@ -65,10 +66,11 @@
         }
 
         [Fact]
-        public void OneAfterTheOtherWhenCold()
+        public void Exercise_OneAfterTheOtherWhenCold()
         {
             var scheduler = new TestScheduler();
 
+            // Cold observables generate their values everytime an observer subscribes
             var observableA = scheduler.CreateColdObservable(
                 OnNext(100, 1),
                 OnNext(200, 2),
@@ -95,12 +97,11 @@
         }
 
         [Fact]
-        public void OneAfterTheOtherWhenHot()
+        public void Exercise_OneAfterTheOtherWhenHot()
         {
             var scheduler = new TestScheduler();
 
-            // Opposed to cold observables that generate their values everytime an observer subscribes
-            // hot observables run "in the background" (think touching the CPU when no subscribers are around).
+            // Hot observables run "in the background" (think touching the CPU when no subscribers are around).
             // I.e. cold observables timings are relative to the subscription whereas hot observables timings
             // are relative to their creation. A typical instance of a hot observable are mouse events:
             // they happen regardless of subscriptions and once they've happened, they're gone (unless 'replay'ed).
@@ -119,7 +120,7 @@
 
             var events = scheduler.Start(() => firstAThenB, 0, 10, 1000);
 
-            // TODO: try making the test pass by adding OnNext statement(s)
+            // TODO: try making the test pass by adding OnNext statement(s) at the end of the AssertEqual statement
             // Hint: (re)read the second part of the initial comment.
             events.Messages.AssertEqual(
                 OnNext(100, 1),
@@ -128,7 +129,7 @@
         }
 
         [Fact]
-        public void Debounce()
+        public void Exercise_Debounce()
         {
             var scheduler = new TestScheduler();
 
@@ -150,7 +151,7 @@
         }
 
         [Fact]
-        public async void OnlyNewStuff()
+        public async void Exercise_OnlyNewStuff()
         {
             var temperature = new[] { 20, 20, 21, 22, 22, 21, 24 }.ToObservable();
 
@@ -158,7 +159,7 @@
             // For reactive streams, having strictly distinct values implies waiting for completion and
             // caching all intermediate results. A more common use case is to only let through values that
             // changed relatively to the previous one.
-            // TODO: only refresh the e-ink display once the temperature changed
+            // TODO: only return changed respectivelly new temperature values
             var temperatureChangesToShow = temperature;
 
             var result = await temperatureChangesToShow.ToList();
@@ -166,7 +167,7 @@
         }
 
         [Fact]
-        public void Batching()
+        public void Exercise_Batching()
         {
             var scheduler = new TestScheduler();
             var tourists = scheduler.CreateColdObservable(
@@ -192,7 +193,7 @@
         }
 
         [Fact]
-        public void Scrum()
+        public void Exercise_Scrum()
         {
             var scheduler = new TestScheduler();
             var thermoSensor = new Random(42);
@@ -214,7 +215,7 @@
         }
 
         [Fact]
-        public void Interruptible()
+        public void Exercise_Interruptible()
         {
             var scheduler = new TestScheduler();
 

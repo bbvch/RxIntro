@@ -26,7 +26,7 @@
     public class Basics : ReactiveTest
     {
         [Fact]
-        public void ObservableAndObserver()
+        public void Exercise_ObservableAndObserver()
         {
             // TODO: create an 'Observable' that 'return's an integer
             var observable = Observable.Empty<int>();
@@ -38,7 +38,7 @@
         }
 
         [Fact]
-        public void ObservableAndAction()
+        public void Exercise_ObservableAndAction()
         {
             var observable = Observable.Throw<decimal>(new MissingMethodException());
             var errorHappened = false;
@@ -52,7 +52,7 @@
         }
 
         [Fact]
-        public void FromCollection()
+        public void Exercise_FromCollection()
         {
             // Note that this should only be used
             // - for tests
@@ -67,7 +67,7 @@
         }
 
         [Fact]
-        public void ToLazy()
+        public void Exercise_ToLazy()
         {
             // Also, leaving the monad is mostly useful when testing or a non-reactive datastructure needs to be built.
             var observable = Observable.Repeat("FooBar");
@@ -79,7 +79,7 @@
         }
 
         [Fact]
-        public async void ToStrict()
+        public async void Exercise_ToStrict()
         {
             var observable = Observable.Repeat("FooBar");
 
@@ -92,7 +92,7 @@
         }
 
         [Fact]
-        public void ErrorsShouldTerminateObservables()
+        public void Exercise_ErrorsShouldTerminateObservables()
         {
             var scheduler = new TestScheduler();
 

@@ -16,7 +16,7 @@
     public class CreatingObservables
     {
         [Fact]
-        public void UsingFactoryMethod()
+        public void Exercise_UsingFactoryMethod()
         {
             // The preferred way of creating production observables is through combinators
             // (i.e. Return, Never, Interval, ...). In tests predefined sequences are predominant.
@@ -34,7 +34,7 @@
         }
 
         [Fact]
-        public void FromSubjects()
+        public void Exercise_FromSubjects()
         {
             // Subjects are IObservable and IObserver at the same time.
             // Being the mutable variable equivalent of observables, they can be used

@@ -17,7 +17,7 @@
     public class Goodies
     {
         [Fact]
-        public async void ObservablesAreCollectionlike()
+        public async void Exercise_ObservablesAreCollectionlike()
         {
             // We want to approximate the largest value X s.t. 0 < X < Math.PI and cos(X) > 0
             const double Precision = 0.01;
@@ -33,7 +33,7 @@
         }
 
         [Fact]
-        public void ObservablesAndSchedulers()
+        public void Exercise_ObservablesAndSchedulers()
         {
             var observable = Observable.Return(1983);
             var observer = new TestSink<int>();
@@ -50,7 +50,7 @@
         }
 
         [Fact]
-        public void TestingObservables()
+        public void Note_TestingObservables()
         {
             // Testing Rx components is simple in principle (as you've seen) but can be complex for
             // more advanced use cases, including threading, asynchronism, timing, schedulers and so forth.

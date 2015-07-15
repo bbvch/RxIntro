@@ -16,9 +16,11 @@
 
     // HOW TO USE THIS WORKSHOP
     // Goal: make all test pass by just implementing the missing parts indicated with TODOs
+    // The code you should change or add is always right below the TODOs.
     // Try starting at the TODOs and only then read the rest of code. Normally it's not needed
     // to know the details of the test arrangement before you know the task (sometimes even not at all).
     // Try solving first without looking at the test output. Debugging should not be needed.
+    // -
     // For looking at live values, LINQPad is a great tool. In its left-hand explorer panel select samples,
     // Download/import more samples... and enter http://linqpadupdates.net/rx/samples.zip This will add a new
     // node "Reactive Extensions". Executing any of the samples lets you download the required packages.
@@ -84,7 +86,9 @@
             var observable = Observable.Repeat("FooBar");
 
             // TODO: create a strict collection from the observable
-            // HINT 1: also find a way to terminate the infinite stream of elements (e.g. after a fixed number)
+            // HINT 1:
+            // http://reactivex.io/documentation/operators/to.html
+            // http://reactivex.io/documentation/operators/take.html
             // HINT 2: did you notice the test's signature?
             var strictCollection = observable;
 

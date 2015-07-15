@@ -23,7 +23,7 @@
                 ev => MessageReceived -= ev);
 
             // When there are no observers, there should also be no event handler attached.
-            // (FYI, of course there's a way to alter that behaviour, s.t. events don't get lost.)
+            // (FYI: of course there's a way to alter that behaviour, s.t. events don't get lost.)
             Assert.True(false, "Read the code, try to understand its meaning and finally remove this statement");
             MessageReceived.Should().BeNull();
         }
@@ -54,7 +54,7 @@
                 .Select(_ => new EventPattern<string>(this, _)) // can be turned into a sequence of events
                 .ToEventPattern(); // And then into an object having an event
 
-            //// TODO: do the wireing up
+            //// TODO: wire up the eventSource and 'this'
 
             this.ShouldRaise("MessageReceived");
         }
@@ -71,7 +71,8 @@
             // - accept that we could have potentially long-running tests
             // - introduce the potential for spurious failures
             // We'll go with the second option here, similar to task.Wait(timeout)
-            // TODO: Timeout the observable after e.g. 100ms (instead of throwing)
+            // TODO: Timeout the observable after e.g. 100ms (instead of .Concat(...))
+            // HINT: http://reactivex.io/documentation/operators/timeout.html
             observable = observable.Concat(Observable.Throw<string>(new NotImplementedException()));
 
             observable.Invoking(_ => _.Wait()).ShouldNotThrow();

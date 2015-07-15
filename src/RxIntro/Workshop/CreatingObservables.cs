@@ -37,8 +37,8 @@
         public void Exercise_FromSubjects()
         {
             // Subjects are IObservable and IObserver at the same time.
-            // Being the mutable variable equivalent of observables, they can be used
-            // to imperatively send events (e.g. for reactive properties).
+            // Being the mutable variable equivalent of observables they can be used
+            // to imperatively send events (e.g. for reactive properties, replacing IPropertyChanged).
             // For a detailed discussion on when subjects should be avoided
             // see http://davesexton.com/blog/post/To-Use-Subject-Or-Not-To-Use-Subject.aspx.
             var subject = new Subject<int>();

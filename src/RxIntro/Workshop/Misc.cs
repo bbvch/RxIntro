@@ -14,7 +14,7 @@
 
     using Xunit;
 
-    public class Goodies
+    public class Misc
     {
         [Fact]
         public async void Exercise_ObservablesAreCollectionlike()

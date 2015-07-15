@@ -66,12 +66,13 @@
             observer.Values.ShouldAllBeEquivalentTo(expected);
         }
 
-        [Fact (Skip = "todo. Verify expected values.")]
+        [Fact]
         public void Exercise_OneAfterTheOtherWhenCold()
         {
             var scheduler = new TestScheduler();
 
-            // Cold observables generate their values everytime an observer subscribes
+            // Cold observables generate their values everytime an observer subscribes,
+            // i.e. their timings are relative to the subscription.
             var observableA = scheduler.CreateColdObservable(
                 OnNext(100, 1),
                 OnNext(200, 2),
@@ -85,14 +86,21 @@
 
             // TODO: concatenate the two observables
             // HINT: http://reactivex.io/documentation/operators/concat.html
-            IObservable<int> firstAThenB = null;
+            var firstAThenB = Observable.Empty<int>();
 
-            var events = scheduler.Start(() => firstAThenB, 0, 10, 1000);
+            const int CreateObservableAt = 0;
+            const int SubscribeAt = 10;
+            const int UnsubscribeAt = 1000;
 
+            var events = scheduler.Start(() => firstAThenB, CreateObservableAt, SubscribeAt, UnsubscribeAt);
+
+            // NOTE: the messages are shifted by SubscribeAt due to the observable
+            // creating its values on demand when an observer subscribes.
+            // The second observable then starts after the first one completes at 400.
             events.Messages.AssertEqual(
                 OnNext(110, 1),
-                OnNext(200, 2),
-                OnNext(300, 3),
+                OnNext(210, 2),
+                OnNext(310, 3),
                 OnNext(620, 10),
                 OnNext(720, 20),
                 OnNext(820, 30));
@@ -104,8 +112,7 @@
             var scheduler = new TestScheduler();
 
             // Hot observables run "in the background" (think touching the CPU when no subscribers are around).
-            // I.e. cold observables timings are relative to the subscription whereas hot observables timings
-            // are relative to their creation. A typical instance of a hot observable are mouse events:
+            // Their timings are relative to their creation. A typical instance of a hot observable are mouse events:
             // they happen regardless of subscriptions and once they've happened, they're gone (unless 'replay'ed).
             var observableA = scheduler.CreateHotObservable(
                 OnNext(100, 1),
@@ -141,8 +148,10 @@
                 OnNext(450, 3),
                 OnNext(600, 4));
 
-            // TODO: ignore elements following each other in less than or equal 100 ticks
-            // HINT: do not forget to pass the scheduler
+            // TODO: ignore elements preceeding another in less than or equal 100 ticks
+            // HINT 1: http://reactivex.io/documentation/operators/debounce.html
+            // HINT 2: do not forget to pass the scheduler
+            // Hint 3: in RxNET the method to use is named differently (see end of HINT 1)
             var throttledObservable = fastObservable;
 
             var observer = scheduler.Start(() => throttledObservable, 0, 0, 1000);
@@ -161,17 +170,20 @@
             // For reactive streams, having strictly distinct values implies waiting for completion and
             // caching all intermediate results. A more common use case is to only let through values that
             // changed relatively to the previous one.
-            // TODO: only return changed respectively new temperature values
+            // TODO: only return changed temperature values (includes the first, new one)
+            // HINT: http://reactivex.io/documentation/operators/distinct.html (almost)
             var temperatureChangesToShow = temperature;
 
             var result = await temperatureChangesToShow.ToList();
             result.ShouldAllBeEquivalentTo(new[] { 20, 21, 22, 21, 24 });
         }
 
-        [Fact (Skip = "refine into smaller steps")]
+        [Fact]
         public void Exercise_Batching()
         {
             var scheduler = new TestScheduler();
+            var cableCar = new TestSink<IEnumerable<string>>();
+
             var tourists = scheduler.CreateColdObservable(
                 OnNext(300, "Alice"),
                 OnNext(430, "Bob"),
@@ -180,15 +192,18 @@
                 OnNext(505, "Eric"),
                 OnNext(505, "Floyd"),
                 OnCompleted<string>(700));
-            var cableCar = new TestSink<IEnumerable<string>>();
 
-            // - The cable car leaves as soon as it is full: 
-            //     a) either when there are 2 persons in the car or 
-            //     b) when 120 ticks passed
+            // - The cable car leaves: 
+            //   a) when there are 2 persons in the car
+            //   b) when 120 ticks passed
             // - The cable car should only leave, when tourists are present
             // TODO: Split the tourists into suitable batches
-            // (hint: 2 steps, waiting areas are buffers) and subscribe the cableCar
-            //// tourists. BUFFER . ONLY WHEN NOT EMPTY . SUBSCRIBE
+            // HINT 1: http://reactivex.io/documentation/operators/buffer.html (suitable overload)
+            // HINT 2: filtering
+            var touristBatches = Observable.Empty<IEnumerable<string>>();
+            var nonEmptyBatches = touristBatches;
+
+            nonEmptyBatches.Subscribe(cableCar);
 
             scheduler.Start();
 
@@ -197,21 +212,23 @@
         }
 
         [Fact]
-        public void Exercise_Scrum()
+        public void Exercise_MovingAverage()
         {
             var scheduler = new TestScheduler();
+            var observer = new TestSink<double>();
             var thermoSensor = new Random(42);
 
             var temperatureReadings =
                 Observable.Interval(TimeSpan.FromMilliseconds(100), scheduler).Select(_ => thermoSensor.Next(-273, 100));
 
             // TODO: calculate the moving (every second) average (over one minute) of the temperature readings.
-            // HINT: use a suitable overload of the same method used in "Batching" and calculate the average using LINQ
+            // HINT: use a suitable overload of the same method used in "Batching"
+            // and then calculate the average of each batch using LINQ
+            // HINT: don't forget to pass the scheduler
+            var slidingBuffers = Observable.Empty<IEnumerable<double>>();
             var averages = Observable.Empty<double>();
-
-            var observer = new TestSink<double>();
+            
             averages.Subscribe(observer);
-
             scheduler.AdvanceTo(TimeSpan.TicksPerMinute * 2);
 
             observer.Values.Count().Should().Be(61);
@@ -221,6 +238,7 @@
         public void Exercise_Interruptible()
         {
             var scheduler = new TestScheduler();
+            var observer = new TestSink<Tuple<long, long>>();
 
             // For a news site offering articles about trending topics we want to keep reading about
             // a topic until a new trend appears, when we want to hear about the latest news there.
@@ -230,9 +248,8 @@
                 .Select(topic => Observable.Interval(TimeSpan.FromTicks(40), scheduler)
                     .Select(article => new Tuple<long, long>(topic, article)));
 
-            var observer = new TestSink<Tuple<long, long>>();
-
             // TODO: always switch to the latest topic
+            // HINT: http://reactivex.io/documentation/operators/switch.html
             var latestInteresting = Observable.Empty<Tuple<long, long>>();
 
             latestInteresting.Subscribe(observer);

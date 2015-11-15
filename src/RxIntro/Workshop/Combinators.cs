@@ -32,9 +32,8 @@
                     return Disposable.Empty;
                 });
 
-            // TODO: Use LINQ query syntax or extension methods to return only the terms where the length is greather than 7
             // HINT: http://reactivex.io/documentation/operators/filter.html
-            var constructingObservables = observable;
+            var constructingObservables = observable.Where(_ => _.Length > 7);
 
             var result = await constructingObservables.ToList();
             result.ShouldAllBeEquivalentTo(new[] { "constructing", "observables" });
@@ -60,7 +59,7 @@
             scheduler.Start(() => interleaved, 0, 10, 500);
 
             // HINT: http://reactivex.io/documentation/operators/merge.html
-            var expected = new char[] { /* TODO: list the expected values with the correct order here */ };
+            var expected = new char[] { 'A', 'B', 'C' };
 
             observer.Values.ShouldAllBeEquivalentTo(expected);
         }
@@ -91,9 +90,8 @@
                 OnNext(310, 20),
                 OnNext(410, 30));
 
-            // TODO: concatenate the two observables
             // HINT: http://reactivex.io/documentation/operators/concat.html
-            var firstAThenB = Observable.Empty<int>();
+            var firstAThenB = observableA.Concat(observableB);
 
             const int CreateObservableAt = 0;
             const int SubscribeAt = 10;
@@ -143,7 +141,8 @@
             events.Messages.AssertEqual(
                 OnNext(100, 1),
                 OnNext(200, 2),
-                OnNext(300, 3));
+                OnNext(300, 3),
+                OnNext(410, 30));
         }
 
         [Fact]
@@ -157,11 +156,10 @@
                 OnNext(450, 3),
                 OnNext(600, 4));
 
-            // TODO: ignore elements preceeding another in less than or equal 100 ticks
             // HINT 1: http://reactivex.io/documentation/operators/debounce.html
             // HINT 2: do not forget to pass the scheduler
             // HINT 3: in Rx.NET the method to use is named differently (see end of HINT 1)
-            var throttledObservable = fastObservable;
+            var throttledObservable = fastObservable.Throttle(TimeSpan.FromTicks(100), scheduler);
 
             var observer = scheduler.Start(() => throttledObservable, 0, 0, 1000);
 
@@ -180,9 +178,8 @@
             // For reactive streams, having strictly distinct values implies waiting for completion and
             // caching all intermediate results. A more common use case is to only let through values that
             // changed relatively to the previous one.
-            // TODO: only return changed temperature values (includes the first, new one)
             // HINT: http://reactivex.io/documentation/operators/distinct.html (almost)
-            var temperatureChangesToShow = temperature;
+            var temperatureChangesToShow = temperature.DistinctUntilChanged();
 
             var result = await temperatureChangesToShow.ToList();
             result.ShouldAllBeEquivalentTo(new[] { 20, 21, 22, 21, 24 });
@@ -209,13 +206,11 @@
             //   b) when 120 ticks passed
             //
             // - The cable car should only leave, when tourists are present
-            //
-            // TODO: Split the tourists into suitable batches
             // HINT 1: http://reactivex.io/documentation/operators/buffer.html (suitable overload)
             // HINT 2: use LINQ to filter empty batches
             // HINT 3: don't forget to pass the scheduler
-            var touristBatches = Observable.Empty<IEnumerable<string>>();
-            var nonEmptyBatches = touristBatches;
+            var touristBatches = tourists.Buffer(TimeSpan.FromTicks(120), 2, scheduler);
+            var nonEmptyBatches = touristBatches.Where(_ => _.Any());
 
             nonEmptyBatches.Subscribe(cableCar);
 
@@ -235,7 +230,6 @@
             var temperatureReadings =
                 Observable.Interval(TimeSpan.FromMilliseconds(100), scheduler).Select(_ => thermoSensor.Next(-273, 100));
 
-            // TODO: calculate the moving (every second) average (over one minute) of the temperature readings.
             // Step 1) build batches of the temperature readings
             //         - batch length = 1 minute
             //         - time shift   = 1 second
@@ -245,8 +239,8 @@
             // HINT 2: use a suitable overload of the same method used in "Batching"
             // and then calculate the average of each batch using LINQ
             // HINT 3: don't forget to pass the scheduler
-            var slidingBuffers = Observable.Empty<IEnumerable<double>>();
-            var averages = Observable.Empty<double>();
+            var slidingBuffers = temperatureReadings.Buffer(TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(1), scheduler);
+            var averages = slidingBuffers.Select(_ => _.Average());
 
             averages.Subscribe(observer);
             scheduler.AdvanceTo(TimeSpan.TicksPerMinute * 2);
@@ -268,9 +262,8 @@
                 .Select(topic => Observable.Interval(TimeSpan.FromTicks(40), scheduler)
                     .Select(article => new Tuple<long, long>(topic, article)));
 
-            // TODO: always switch to the latest topic
             // HINT: http://reactivex.io/documentation/operators/switch.html
-            var latestInteresting = Observable.Empty<Tuple<long, long>>();
+            var latestInteresting = articlesInTopics.Switch();
 
             latestInteresting.Subscribe(observer);
 

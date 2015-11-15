@@ -29,12 +29,11 @@
         [Fact]
         public void Exercise_ObservableAndObserver()
         {
-            // TODO: create an 'Observable' that 'return's an integer
-            var observable = Observable.Empty<int>();
+            var observable = Observable.Return(42);
             // HINT: have a look at all methods of the Observable class.
             var observer = new TestSink<int>();
 
-            //// TODO: subscribe to the observable
+            observable.Subscribe(observer);
 
             observer.Values.Single().Should().Be(42);
         }
@@ -47,8 +46,7 @@
 
             // Instead of having an observer, we can also supply
             // a method to be called when something happens.
-            // TODO extend the subscription
-            observable.Subscribe(_ => { });
+            observable.Subscribe(_ => { }, _ => errorHappened = true);
             // HINT: have a look at all the overloads of the Subscribe method.
 
             errorHappened.Should().BeTrue();
@@ -63,8 +61,7 @@
             // as hiding the synchronous character of collections is considered bad practice
             var collection = new[] { "Hello", "world!" };
 
-            // TODO: create an observable from the collection
-            var observable = collection;
+            var observable = collection.ToObservable();
             // HINT: Rx provides a lot of extension methods. There is one method which you can use for this task.
 
             observable.Should().BeAssignableTo<IObservable<string>>();
@@ -78,8 +75,7 @@
             // them on to non-reactive APIs.
             var observable = Observable.Repeat("FooBar");
 
-            // TODO: create an enumerable from the observable
-            var lazyEnumerable = observable;
+            var lazyEnumerable = observable.ToEnumerable();
 
             lazyEnumerable.Should().BeAssignableTo<IEnumerable<string>>();
 
@@ -98,7 +94,7 @@
             // http://reactivex.io/documentation/operators/take.html
             // http://reactivex.io/documentation/operators/to.html
             // HINT 2: did you notice the test's signature?
-            var strictCollection = observable;
+            var strictCollection = await observable.Take(10).ToList();
 
             strictCollection.Should().BeAssignableTo<ICollection<string>>()
                 .And.Subject.As<ICollection<string>>().Count.Should().BeGreaterOrEqualTo(10);

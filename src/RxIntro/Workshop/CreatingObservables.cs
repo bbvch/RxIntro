@@ -24,8 +24,7 @@
             var scheduler = new TestScheduler();
             var random = new Random(7);
 
-            // TODO: Create an infinite observable generating integers at random times but at least every 100 ticks
-            var observable = Observable.Never<int>();
+            var observable = Observable.Generate(random.Next(), _ => true, _ => random.Next(), _ => _, _ => TimeSpan.FromTicks(random.Next(100)), scheduler);
 
             // Extremely poor mans randomness test, for better variants see Knuth's TAOCP
             var result = scheduler.Start(() => observable, 1000);
@@ -45,7 +44,7 @@
             var observer = new TestSink<int>();
             subject.Subscribe(observer);
 
-            //// TODO: send some notifications
+            subject.OnNext(7);
 
             observer.Values.Should().NotBeEmpty();
         }

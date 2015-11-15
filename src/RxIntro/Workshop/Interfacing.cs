@@ -24,7 +24,6 @@
 
             // When there are no observers, there should also be no event handler attached.
             // (FYI: of course there's a way to alter that behaviour, s.t. events don't get lost.)
-            Assert.True(false, "Read the code, try to understand its meaning and finally remove this statement");
             MessageReceived.Should().BeNull();
         }
 
@@ -37,9 +36,10 @@
 
             // For resource management reasons, events should be unsubscribed
             // once we are not interested in notifications anymore.
-            // TODO: treat the returned subscription according to its interface
-            observable.Select(ep => ep.EventArgs).Subscribe(_ => { });
-            MessageReceived(this, "making visions work");
+            using (observable.Select(ep => ep.EventArgs).Subscribe(_ => { }))
+            {
+                MessageReceived(this, "making visions work");
+            }
 
             MessageReceived.Should().BeNull();
         }
@@ -54,7 +54,7 @@
                 .Select(_ => new EventPattern<string>(this, _)) // can be turned into a sequence of events
                 .ToEventPattern(); // And then into an object having an event
 
-            //// TODO: wire up the eventSource and 'this'
+            eventSource.OnNext += MessageReceived;
 
             this.ShouldRaise("MessageReceived");
         }
@@ -71,9 +71,8 @@
             // - accept that we could have potentially long-running tests
             // - introduce the potential for spurious failures
             // We'll go with the second option here, similar to task.Wait(timeout)
-            // TODO: Timeout the observable after e.g. 100ms (instead of .Concat(...))
             // HINT: http://reactivex.io/documentation/operators/timeout.html
-            observable = observable.Concat(Observable.Throw<string>(new NotImplementedException()));
+            observable = observable.Timeout(TimeSpan.FromMilliseconds(100));
 
             observable.Invoking(_ => _.Wait()).ShouldNotThrow();
         }

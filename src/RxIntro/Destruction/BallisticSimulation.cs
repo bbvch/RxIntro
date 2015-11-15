@@ -26,11 +26,7 @@
             };
             var initial = new State(0, Vector<double>.Build.Dense(2, 0.0), Vector<double>.Build.Dense(powerComponents));
 
-            // TODO Instead of returning only the initial state, generate the next state while the projectile is flying.
-            // TODO To simulate a high-speed camera add some relative delay by multiplying the passed time with bulletTimeFactor.
-            // TODO The simulation is very compute-intensive. We want to use the operating system's default thread pool.
-            var states = Observable.Return(initial);
-
+            var states = Observable.Generate(initial, Flying, NextState, _ => _, _ => TimeSpan.FromSeconds(Δt * bulletTimeFactor), Scheduler.Default);
             return states.Select(_ => new Tuple<double, double>(_.Position[X], _.Position[Y]));
         }
 

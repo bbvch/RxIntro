@@ -23,11 +23,9 @@
             const double Precision = 0.01;
             var observable = Observable.Generate(0.0, i => i < Math.PI, i => i + Precision, i => i);
 
-            // TODO: write a LINQ query filtering for x where Math.Cos(x) > 0
-            var cosPositive = observable;
+            var cosPositive = observable.Where(x => Math.Cos(x) > 0);
 
-            // TODO: get the last value (hint: look at the signature of this test method)
-            var lastBeforeZero = 0.0;
+            var lastBeforeZero = await cosPositive.LastAsync();
 
             lastBeforeZero.Should().BeApproximately(Math.PI / 2, Precision);
         }
@@ -39,9 +37,8 @@
             var observer = new TestSink<int>();
             var firstThreadId = Thread.CurrentThread.ManagedThreadId;
 
-            // TODO: find a way to schedule observations on a different thread
             // HINT: might also be done using an overload when creating the observable
-            observable = observable;
+            observable = observable.ObserveOn(new NewThreadScheduler());
 
             observable.Select(_ => Thread.CurrentThread.ManagedThreadId).Subscribe(observer);
 
@@ -63,8 +60,7 @@
 
             // Concurrency is only introduced using schedulers. All methods needing an IScheduler also have
             // overrides using the default scheduler. For testing, we need to provide a custom one.
-            // TODO: pass 'scheduler' at the right place
-            var observable = Observable.Return(string.Empty).Delay(tomorrow).Select(_ => DateTime.Now);
+            var observable = Observable.Return(string.Empty).Delay(tomorrow, scheduler).Select(_ => DateTime.Now);
 
             var systemStart = now.AddDays(-1).Ticks;
             var subscriptionAt = now.Ticks;

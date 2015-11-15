@@ -156,9 +156,10 @@
 
             var observer = scheduler.Start(() => throttledObservable, 0, 0, 1000);
 
+            // How do this values relate to the setup above?
             observer.Messages.AssertEqual(
-                OnNext(450, 3),
-                OnNext(600, 4));
+                OnNext(551, 3),
+                OnNext(701, 4));
         }
 
         [Fact]

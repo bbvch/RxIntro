@@ -13,7 +13,7 @@
     
     public class Interfacing
     {
-        public static event EventHandler<string> MessageReceived;
+        public event EventHandler<string> MessageReceived;
 
         [Fact]
         public void Note_ObservablesDoNotSubscribeUnnecessarily()

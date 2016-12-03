@@ -1,7 +1,6 @@
 <Query Kind="Program">
   <NuGetReference>FluentAssertions</NuGetReference>
-  <NuGetReference>Rx-Main</NuGetReference>
-  <NuGetReference>Rx-Testing</NuGetReference>
+  <NuGetReference>Microsoft.Reactive.Testing</NuGetReference>
   <NuGetReference>System.Collections.Immutable</NuGetReference>
   <NuGetReference>xunit</NuGetReference>
   <Namespace>FluentAssertions</Namespace>

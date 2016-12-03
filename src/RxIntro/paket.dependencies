@@ -1,0 +1,20 @@
+source https://www.nuget.org/api/v2/
+framework: net461
+redirects: on
+
+nuget FluentAssertions
+nuget FSharp.Charting
+nuget FSharp.Core
+nuget MathNet.Numerics
+nuget Microsoft.Reactive.Testing
+nuget System.Reactive
+nuget System.Collections
+nuget System.Collections.Immutable
+nuget System.Diagnostics.Debug
+nuget System.Globalization
+nuget System.Linq
+nuget System.Resources.ResourceManager
+nuget System.Runtime
+nuget System.Runtime.Extensions
+nuget System.Threading
+nuget xunit

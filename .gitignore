@@ -188,3 +188,4 @@ GeneratedArtifacts/
 _Pvt_Extensions/
 ModelManifest.xml
 /src/RxIntro/packages
+/src/RxIntro/.paket/paket.exe

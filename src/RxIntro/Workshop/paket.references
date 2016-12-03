@@ -1,0 +1,12 @@
+FluentAssertions
+Microsoft.Reactive.Testing
+System.Collections
+System.Collections.Immutable
+System.Diagnostics.Debug
+System.Globalization
+System.Linq
+System.Resources.ResourceManager
+System.Runtime
+System.Runtime.Extensions
+System.Threading
+xunit

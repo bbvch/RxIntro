@@ -59,9 +59,8 @@
 
             scheduler.Start(() => interleaved, 0, 10, 500);
 
-            // TODO: Write the expected values with the correct order into the next statement
             // HINT: http://reactivex.io/documentation/operators/merge.html
-            var expected = new char[] { };
+            var expected = new char[] { /* TODO: list the expected values with the correct order here */ };
 
             observer.Values.ShouldAllBeEquivalentTo(expected);
         }
@@ -71,8 +70,16 @@
         {
             var scheduler = new TestScheduler();
 
-            // Cold observables generate their values everytime an observer subscribes,
-            // i.e. their timings are relative to the subscription.
+            /* source: http://reactivex.io/documentation/observable.html
+             * “Hot” and “Cold” Observables
+             * When does an Observable begin emitting its sequence of items? It depends on the Observable. A “hot” Observable
+             * may begin emitting items as soon as it is created, and so any observer who later subscribes to that Observable
+             * may start observing the sequence somewhere in the middle. A “cold” Observable, on the other hand, waits until 
+             * an observer subscribes to it before it begins to emit items, and so such an observer is guaranteed to see the 
+             * whole sequence from the beginning. (Remark: Their timings are relative to the subscription.)
+             * In some implementations of ReactiveX, there is also something called a “Connectable” Observable. Such an Observable
+             * does not begin emitting items until its Connect method is called, whether or not any observers have subscribed to it. 
+             */
             var observableA = scheduler.CreateColdObservable(
                 OnNext(100, 1),
                 OnNext(200, 2),
@@ -130,7 +137,9 @@
             var events = scheduler.Start(() => firstAThenB, 0, 10, 1000);
 
             // TODO: Add the missing OnNext statement(s) at the end of the AssertEqual statement
-            // HINT: (re)read the second part of the initial comment.
+            // HINT 1: http://reactivex.io/documentation/operators/concat.html
+            // HINT 2: (re)read the second part of the initial comment.
+            // HINT 3: think about what happens when observableA completes.
             events.Messages.AssertEqual(
                 OnNext(100, 1),
                 OnNext(200, 2),
@@ -151,7 +160,7 @@
             // TODO: ignore elements preceeding another in less than or equal 100 ticks
             // HINT 1: http://reactivex.io/documentation/operators/debounce.html
             // HINT 2: do not forget to pass the scheduler
-            // Hint 3: in RxNET the method to use is named differently (see end of HINT 1)
+            // HINT 3: in Rx.NET the method to use is named differently (see end of HINT 1)
             var throttledObservable = fastObservable;
 
             var observer = scheduler.Start(() => throttledObservable, 0, 0, 1000);
@@ -196,11 +205,15 @@
 
             // - The cable car leaves: 
             //   a) when there are 2 persons in the car
+            //      -- or --
             //   b) when 120 ticks passed
+            //
             // - The cable car should only leave, when tourists are present
+            //
             // TODO: Split the tourists into suitable batches
             // HINT 1: http://reactivex.io/documentation/operators/buffer.html (suitable overload)
-            // HINT 2: filtering
+            // HINT 2: use LINQ to filter empty batches
+            // HINT 3: don't forget to pass the scheduler
             var touristBatches = Observable.Empty<IEnumerable<string>>();
             var nonEmptyBatches = touristBatches;
 
@@ -223,16 +236,22 @@
                 Observable.Interval(TimeSpan.FromMilliseconds(100), scheduler).Select(_ => thermoSensor.Next(-273, 100));
 
             // TODO: calculate the moving (every second) average (over one minute) of the temperature readings.
-            // HINT: use a suitable overload of the same method used in "Batching"
+            // Step 1) build batches of the temperature readings
+            //         - batch length = 1 minute
+            //         - time shift   = 1 second
+            // Step 2) calculate the average value of the batches
+            //
+            // HINT 1: http://reactivex.io/documentation/operators/buffer.html (suitable overload)
+            // HINT 2: use a suitable overload of the same method used in "Batching"
             // and then calculate the average of each batch using LINQ
-            // HINT: don't forget to pass the scheduler
+            // HINT 3: don't forget to pass the scheduler
             var slidingBuffers = Observable.Empty<IEnumerable<double>>();
             var averages = Observable.Empty<double>();
-            
+
             averages.Subscribe(observer);
             scheduler.AdvanceTo(TimeSpan.TicksPerMinute * 2);
 
-            observer.Values.Count().Should().Be(61);
+            observer.Values.Should().HaveCount(61);
         }
 
         [Fact]

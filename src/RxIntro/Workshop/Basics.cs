@@ -31,6 +31,7 @@
         {
             // TODO: create an 'Observable' that 'return's an integer
             var observable = Observable.Empty<int>();
+            // HINT: have a look at all methods of the Observable class.
             var observer = new TestSink<int>();
 
             //// TODO: subscribe to the observable
@@ -48,6 +49,7 @@
             // a method to be called when something happens.
             // TODO extend the subscription
             observable.Subscribe(_ => { });
+            // HINT: have a look at all the overloads of the Subscribe method.
 
             errorHappened.Should().BeTrue();
         }
@@ -63,6 +65,7 @@
 
             // TODO: create an observable from the collection
             var observable = collection;
+            // HINT: Rx provides a lot of extension methods. There is one method which you can use for this task.
 
             observable.Should().BeAssignableTo<IObservable<string>>();
         }
@@ -90,14 +93,15 @@
         {
             var observable = Observable.Repeat("FooBar");
 
-            // TODO: create a strict collection from the observable
+            // TODO: create a strict collection (eg. List<string>()) containing at least 10 elements from the observable
             // HINT 1:
-            // http://reactivex.io/documentation/operators/to.html
             // http://reactivex.io/documentation/operators/take.html
+            // http://reactivex.io/documentation/operators/to.html
             // HINT 2: did you notice the test's signature?
             var strictCollection = observable;
 
-            strictCollection.Should().BeAssignableTo<ICollection<string>>();
+            strictCollection.Should().BeAssignableTo<ICollection<string>>()
+                .And.Subject.As<ICollection<string>>().Count.Should().BeGreaterOrEqualTo(10);
         }
 
         [Fact]
@@ -105,6 +109,7 @@
         {
             var scheduler = new TestScheduler();
 
+            // The original 'contract' for Rx states that an observable should not emit further values after an exception.
             var cutOffObservable = scheduler.CreateHotObservable(
                 OnNext(100, "OK"),
                 OnError<string>(300, new ArithmeticException()),
